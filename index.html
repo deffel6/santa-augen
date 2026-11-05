@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Santa-Augen Installer</title>
+<script type="module" src="https://unpkg.com/esp-web-tools@10.1.0/dist/web/install-button.js?module"></script>
+<style>
+  :root {
+    --bg: #f7f3ee; --fg: #1f1a17; --muted: #645a52; --card: #ffffff;
+    --line: #e2d9cf; --accent: #b3261e; --accent-fg: #ffffff; --code: #f0e8df; --gold: #b8860b;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #17110f; --fg: #f1e9e2; --muted: #b3a79d; --card: #221a17;
+      --line: #3a2e29; --accent: #e5534b; --accent-fg: #1a0b09; --code: #2c221e; --gold: #f6c453;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font: 16px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  main { max-width: 720px; margin: 0 auto; padding: 40px 16px 64px; }
+  h1 { font-size: 30px; margin: 0 0 6px; letter-spacing: -0.01em; }
+  h2 { font-size: 19px; margin: 36px 0 10px; }
+  p.lead { color: var(--muted); margin: 0 0 28px; }
+  .card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    padding: 22px; display: flex; flex-direction: column; gap: 14px; align-items: flex-start;
+  }
+  esp-web-install-button button[slot="activate"] {
+    background: var(--accent); color: var(--accent-fg); border: 0; border-radius: 10px;
+    padding: 12px 20px; font-size: 16px; font-weight: 650; cursor: pointer;
+  }
+  .hint { color: var(--muted); font-size: 14px; margin: 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 15px; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; font-size: 13px; text-transform: uppercase; letter-spacing: .04em; }
+  td code, p code, li code { background: var(--code); padding: 1px 6px; border-radius: 5px; font-size: 14px; }
+  ol, ul { padding-left: 20px; } li { margin: 4px 0; }
+  .wrap { overflow-x: auto; }
+  footer { margin-top: 40px; color: var(--muted); font-size: 14px; }
+  a { color: var(--accent); }
+</style>
+</head>
+<body>
+<main>
+  <h1>🎅 Santa-Augen</h1>
+  <p class="lead">Freundliche Weihnachtsmann-Augen auf zwei runden GC9A01-Displays mit einem ESP32-C3 Super Mini: blinzeln, lächeln, funkeln, Augenrollen – Steuerung per Handy, optional folgen sie Personen per Radar (HLK-LD2450). Direkt aus dem Browser flashen.</p>
+
+  <div class="card">
+    <esp-web-install-button manifest="manifest.json">
+      <button slot="activate">Installieren</button>
+      <span slot="unsupported">Dein Browser kann nicht flashen. Bitte <b>Chrome</b> oder <b>Edge</b> am Computer verwenden.</span>
+      <span slot="not-allowed">Flashen geht nur über eine HTTPS-Seite (oder localhost).</span>
+    </esp-web-install-button>
+    <p class="hint">ESP32-C3 per USB anschließen, Knopf drücken, Port wählen. Kommt keine Verbindung zustande: <b>BOOT</b>-Taste gedrückt halten, kurz <b>RESET</b> drücken, dann BOOT loslassen und nochmal verbinden.</p>
+  </div>
+
+  <h2>Erster Start</h2>
+  <ol>
+    <li>Der C3 öffnet ein eigenes WLAN <b>„Santa-Augen“</b>, Passwort <code>hohohoho</code>.</li>
+    <li>Damit verbinden, <code>http://192.168.4.1</code> öffnen und unter „WLAN einrichten“ dein Heim-WLAN eintragen.</li>
+    <li>Danach ist die Steuerseite unter <code>http://santa.local</code> erreichbar.</li>
+  </ol>
+
+  <h2>Verdrahtung</h2>
+  <div class="wrap">
+  <table>
+    <thead><tr><th>GC9A01</th><th>Linkes Auge</th><th>Rechtes Auge</th></tr></thead>
+    <tbody>
+      <tr><td>VCC / GND</td><td colspan="2">3V3 / GND (beide)</td></tr>
+      <tr><td>SCL</td><td colspan="2"><code>GPIO 6</code> (beide)</td></tr>
+      <tr><td>SDA</td><td colspan="2"><code>GPIO 7</code> (beide)</td></tr>
+      <tr><td>DC</td><td colspan="2"><code>GPIO 2</code> (beide)</td></tr>
+      <tr><td>RES</td><td colspan="2"><code>GPIO 1</code> (beide)</td></tr>
+      <tr><td>BLK</td><td colspan="2"><code>GPIO 3</code> (beide, falls vorhanden)</td></tr>
+      <tr><td>CS</td><td><code>GPIO 4</code></td><td><code>GPIO 10</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="hint">Die Displays sind um 90° gedreht eingebaut (links nach links, rechts nach rechts). Sitzen deine anders, im Sketch <code>ROT_LINKS</code> / <code>ROT_RECHTS</code> anpassen und selbst bauen. Der Test auf der Steuerseite zeigt, welches Display welches ist.</p>
+
+  <h2>Radar (optional)</h2>
+  <div class="wrap">
+  <table>
+    <thead><tr><th>HLK-LD2450</th><th>ESP32-C3</th></tr></thead>
+    <tbody>
+      <tr><td>5V / GND</td><td>5V / GND</td></tr>
+      <tr><td>TX</td><td><code>GPIO 20</code></td></tr>
+      <tr><td>RX</td><td><code>GPIO 21</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="hint">Die Augen folgen der nächsten Person, lächeln, wenn jemand nah herankommt, und schlafen ein, wenn lange niemand da ist. Erfassungszone, Einschlafzeit und „Mitte setzen“ gibt es auf der Steuerseite.</p>
+
+  <h2>Updates ohne Kabel</h2>
+  <ul>
+    <li>Browser: <code>http://santa.local/update</code> → <code>.bin</code>-Datei wählen.</li>
+    <li>Arduino IDE: Netzwerk-Port „santa“ wählen und hochladen.</li>
+    <li>Passwort dieser Firmware: <code>santa-ota</code>. Wer sein eigenes will, ändert <code>OTA_PASS</code> im Sketch und baut selbst.</li>
+  </ul>
+
+  <h2>Was die Firmware macht</h2>
+  <ol>
+    <li>Augen mit Haut, Lidern und Bäckchen; schauen umher, blinzeln, lächeln mit Lachfalten und funkeln.</li>
+    <li>Alle 30 Sekunden rollen sie kurz mit den Augen.</li>
+    <li>Steuerseite im WLAN: Blick per Touch, Zwinkern, Ho Ho Ho, Herzchen, Schlafen, Helligkeit, Radar-Karte.</li>
+    <li>Verbindet sich nach WLAN-Abbrüchen von selbst neu.</li>
+  </ol>
+
+  <footer>
+    Quellcode: <a href="https://github.com/deffel6/santa-augen">github.com/deffel6/santa-augen</a> · gebaut mit Arduino-ESP32 3.3 und LovyanGFX.
+    Board „ESP32C3 Dev Module“, USB CDC On Boot: Enabled, Partitionsschema „Default 4MB with spiffs“.
+  </footer>
+</main>
+</body>
+</html>
